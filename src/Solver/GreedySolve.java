@@ -3,7 +3,7 @@ package Solver;
 import java.util.List;
 
 import Datatypes.Course;
-import Datatypes.Curriculum;
+//import Datatypes.Curriculum;
 import Datatypes.Room;
 import Datatypes.Teacher;
 import Datatypes.TimeSlot;

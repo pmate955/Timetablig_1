@@ -17,6 +17,9 @@ public class Room {
 	
 	public String getName(){return this.name;}
 	public int getCapacity(){return this.capacity;}
+	public int getDays(){return this.days;}
+	public int getSlots(){return this.slots;}
+	public Course getCourseByPos(int day, int slot){return used[day][slot];};
 	
 	public boolean isUsed(TimeSlot t){
 		return used[t.getDay()][t.getSlot()]!=null;
