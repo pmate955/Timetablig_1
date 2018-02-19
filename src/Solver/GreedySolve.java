@@ -40,12 +40,13 @@ public class GreedySolve {
 		int courseIndex = 0;
 		int counter = 0;
 		while(!isAllTopicFixed() || counter < 20){
+			this.clearTeacherAvailability();
 			for(int day = 0; day < days; day++ ){
 				for(int slot = 0; slot < slots; slot++){			//Fixed periods
 					for(Topic tp:topics){							//Go through topics
 						Course c = tp.getFirstUnfixed();
 						if(c==null) continue;						//If all course in topic is fixed, go to next topic
-						TimeSlot t = new TimeSlot("T ", day, slot);
+						TimeSlot t = new TimeSlot(day, slot);
 						for(Room r : rooms) if(!r.isUsed(t) && slot <= slots-c.getSlots()){		//Go through rooms, and if we find an eligible period/room combination 
 							boolean noSameTopicInPeriod = true;
 							for(Room r2 :rooms){												//Check the same topics in period
@@ -76,32 +77,48 @@ public class GreedySolve {
 	}
 	
 	private void addTeachers(){
-		for(int day = 0; day < days; day++){
-			for(int slot = 0; slot < slots; slot++){
-				TimeSlot t = new TimeSlot("",day,slot);
-				for(Room r: rooms){
-					Course c = r.getCourse(t);
-					if(c == null) continue;
-					String topicName = "";
-					for(Topic topic:topics){					//Optimize later !!!
-						if(topic.contains(c)){
-							topicName = topic.getName();
-							break;
+		int counter = 0, courseCounter = 0;
+		while(counter < 20){
+			for(int day = 0; day < days; day++){
+				for(int slot = 0; slot < slots; slot++){
+					TimeSlot t = new TimeSlot(day,slot);
+					for(Room r: rooms){
+						Course c = r.getCourse(t);
+						if(c == null || c.getT()!=null) continue;
+						String topicName = "";
+						for(Topic topic:topics){					//Optimize later !!!
+							if(topic.contains(c)){
+								topicName = topic.getName();
+								break;
+							}
+						}
+						boolean noTeacher = true;
+						for(Teacher te:teachers){
+							if(te.contains(topicName) && te.isAvailable(t)){
+								te.addUnavailablePeriod(t, c.getSlots());
+								c.setT(te);
+								courseCounter++;
+								noTeacher = false;
+								break;
+							}
+						}
+						if(noTeacher) System.out.println("Problem, no teacher : " + topicName);
+						if(courseCounter>=courses.size()){
+							System.out.println("Solved teachers");
+							return;
 						}
 					}
-					boolean noTeacher = true;
-					for(Teacher te:teachers){
-						if(te.contains(topicName) && te.isAvailable(t)){
-							te.addUnavailablePeriod(t);
-							c.setT(te);
-							noTeacher = false;
-							break;
-						}
-					}
-					if(noTeacher) System.out.println("Problem, no teacher : " + topicName);
 				}
-			}
+			}			
+			courseCounter = 0;
+			counter++;
 		}
+		System.out.println("Not solved - Teachers");
+	}
+	
+	private void clearTeacherAvailability(){
+		for(Teacher t:teachers) t.clearAvailability();
+		for(Course c:courses) c.setT(null);
 	}
 	
 	private boolean isAllTopicFixed(){

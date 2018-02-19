@@ -32,7 +32,15 @@ public class Room {
 	}
 	
 	public Course getCourse(TimeSlot t){
-		return used[t.getDay()][t.getSlot()];
+		if(t.getSlot()<0) return null;
+		Course now = used[t.getDay()][t.getSlot()];
+		if(now == null) return null; 
+		for(int slot = t.getSlot();slot>=0;slot--){
+			if(used[t.getDay()][slot].getName().equals(now.getName())){
+				now = used[t.getDay()][slot];
+			} else break;
+		}
+		return now;
 	}
 
 	public void print(){

@@ -5,8 +5,7 @@ public class TimeSlot {
 	private int day;
 	private int slot;
 	
-	public TimeSlot(String _name, int day, int slot) {
-		this._name = _name;
+	public TimeSlot(int day, int slot) {
 		this.day = day;
 		this.slot = slot;
 	}
@@ -22,7 +21,6 @@ public class TimeSlot {
 	public int getSlot() {
 		return slot;
 	}
-	
 	
 	
 

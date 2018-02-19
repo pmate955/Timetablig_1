@@ -36,13 +36,20 @@ public class Teacher {
 		System.out.println("---------------------------------");
 	}
 	
-	public void addUnavailablePeriod(TimeSlot t){
-		if(!availability.contains(t)) availability.add(t);
+	public void addUnavailablePeriod(TimeSlot t, int slots){
+		for(int i = 0; i < slots; i++){
+			TimeSlot ts = new TimeSlot(t.getDay(),t.getSlot()+i);
+			if(!availability.contains(ts)) availability.add(ts);
+		}
 	}
 	
 	public boolean isAvailable(TimeSlot t){
-		return !availability.contains(t);
+		for(TimeSlot ts:availability) if((ts.getDay()==t.getDay()) && (ts.getSlot()==t.getSlot())) return false;
+		return true;
+		//return !availability.contains(t);			WHY??????
 	}
 	
-	
+	public void clearAvailability(){
+		this.availability.clear();
+	}
 }
