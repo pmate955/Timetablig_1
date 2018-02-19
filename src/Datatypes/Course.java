@@ -43,7 +43,7 @@ public class Course {
 	}
 
 	public String toString(){
-		return "Name: " + this.name + " Teacher: " + (T==null?" null ":T.get_name()) + " Students: " + this.capacity + " slots: " + this.slots;
+		return "Name: " + this.name + " Teacher: " + (T==null?" null ":T.getName()) + " Students: " + this.capacity + " slots: " + this.slots;
 	}
 	
 	public boolean isFixed(){

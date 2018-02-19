@@ -32,7 +32,7 @@ public class GreedySolve {
 		this.topics = r.topics;		
 	}
 	
-	public void solve(){
+	public void solve(){										//Courses to Rooms
 		if(!readyToSolve){
 			System.out.println("Can not solve because no input data! ");
 			return;
@@ -51,6 +51,7 @@ public class GreedySolve {
 							for(Room r2 :rooms){												//Check the same topics in period
 								if(r2.isUsed(t) && tp.contains(r2.getCourse(t))){
 									noSameTopicInPeriod = false;
+									break;
 								}
 							}
 							if(noSameTopicInPeriod){
@@ -60,7 +61,8 @@ public class GreedySolve {
 								break;
 							}
 						}
-						if(courseIndex>=courses.size()){						
+						if(courseIndex>=courses.size()){					
+							this.addTeachers();
 							System.out.println("___________SOLVED_________");								
 							return;
 						}
@@ -69,7 +71,37 @@ public class GreedySolve {
 			}
 			counter++;
 		}		
+		this.addTeachers();
 		System.out.println("Not solved in time :( ");
+	}
+	
+	private void addTeachers(){
+		for(int day = 0; day < days; day++){
+			for(int slot = 0; slot < slots; slot++){
+				TimeSlot t = new TimeSlot("",day,slot);
+				for(Room r: rooms){
+					Course c = r.getCourse(t);
+					if(c == null) continue;
+					String topicName = "";
+					for(Topic topic:topics){					//Optimize later !!!
+						if(topic.contains(c)){
+							topicName = topic.getName();
+							break;
+						}
+					}
+					boolean noTeacher = true;
+					for(Teacher te:teachers){
+						if(te.contains(topicName) && te.isAvailable(t)){
+							te.addUnavailablePeriod(t);
+							c.setT(te);
+							noTeacher = false;
+							break;
+						}
+					}
+					if(noTeacher) System.out.println("Problem, no teacher : " + topicName);
+				}
+			}
+		}
 	}
 	
 	private boolean isAllTopicFixed(){

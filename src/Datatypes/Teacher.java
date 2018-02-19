@@ -1,17 +1,48 @@
 package Datatypes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Teacher {
-	private String _name;
+	private String name;
+	private List<String> specialities;
+	private List<TimeSlot> availability;
 	
-	public Teacher(String _name){
-		this._name = _name;
+	public Teacher(String name){
+		this.name = name;
+		this.specialities = new ArrayList<String>();
+		this.availability = new ArrayList<TimeSlot>();
 	}
 
-	public String get_name() {
-		return _name;
+	public String getName() {
+		return name;
 	}
 
-	public void set_name(String _name) {
-		this._name = _name;
+	public void setName(String _name) {
+		this.name = _name;
 	}
+	
+	public void addSpeciality(String spec){
+		if(!specialities.contains(spec)) specialities.add(spec);
+	}
+	
+	public boolean contains(String spec){
+		return specialities.contains(spec);
+	}
+	
+	public void print(){
+		System.out.println("Name: " + this.name);
+		for(String s: specialities) System.out.println("Spec: " + s);
+		System.out.println("---------------------------------");
+	}
+	
+	public void addUnavailablePeriod(TimeSlot t){
+		if(!availability.contains(t)) availability.add(t);
+	}
+	
+	public boolean isAvailable(TimeSlot t){
+		return !availability.contains(t);
+	}
+	
+	
 }
