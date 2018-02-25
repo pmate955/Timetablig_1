@@ -1,17 +1,12 @@
 package Datatypes;
 
 public class TimeSlot {
-	private String _name;
 	private int day;
 	private int slot;
 	
 	public TimeSlot(int day, int slot) {
 		this.day = day;
 		this.slot = slot;
-	}
-
-	public String get_name() {
-		return _name;
 	}
 
 	public int getDay() {
@@ -22,6 +17,10 @@ public class TimeSlot {
 		return slot;
 	}
 	
+	public boolean equals(Object o){
+		if(!(o instanceof TimeSlot)) return false;
+		return (this.day == (((TimeSlot)o).getDay())) && (this.slot == ((TimeSlot)o).getSlot());
+	}
 	
 
 }

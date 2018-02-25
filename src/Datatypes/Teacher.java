@@ -44,9 +44,7 @@ public class Teacher {
 	}
 	
 	public boolean isAvailable(TimeSlot t){
-		for(TimeSlot ts:availability) if((ts.getDay()==t.getDay()) && (ts.getSlot()==t.getSlot())) return false;
-		return true;
-		//return !availability.contains(t);			WHY??????
+		return !availability.contains(t);			
 	}
 	
 	public void clearAvailability(){

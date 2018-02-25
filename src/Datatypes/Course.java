@@ -55,4 +55,9 @@ public class Course {
 		//System.out.println("setfixed");
 	}
 	
+	public boolean equals(Object o){
+		if(!(o instanceof Course)) return false;
+		return (this.name.equals(((Course)o).getName()) && (this.slots == ((Course)o).getSlots()));
+	}
+	
 }
