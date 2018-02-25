@@ -36,7 +36,7 @@ public class Room {
 		Course now = used[t.getDay()][t.getSlot()];
 		if(now == null) return null; 
 		for(int slot = t.getSlot();slot>=0;slot--){
-			if(used[t.getDay()][slot].getName().equals(now.getName())){
+			if(used[t.getDay()][slot].equals(now)){
 				now = used[t.getDay()][slot];
 			} else break;
 		}

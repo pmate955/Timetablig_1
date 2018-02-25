@@ -22,5 +22,11 @@ public class TimeSlot {
 		return (this.day == (((TimeSlot)o).getDay())) && (this.slot == ((TimeSlot)o).getSlot());
 	}
 	
-
+	public int hashCode(){
+		int hash = 17;
+		hash = hash * 31 + this.day;
+		hash = hash * 31 + this.slot;
+		return hash;
+	}
+	
 }

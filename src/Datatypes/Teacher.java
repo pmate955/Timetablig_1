@@ -1,17 +1,19 @@
 package Datatypes;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Teacher {
 	private String name;
 	private List<String> specialities;
-	private List<TimeSlot> availability;
+	private Set<TimeSlot> availability;
 	
 	public Teacher(String name){
 		this.name = name;
 		this.specialities = new ArrayList<String>();
-		this.availability = new ArrayList<TimeSlot>();
+		this.availability = new HashSet<TimeSlot>();
 	}
 
 	public String getName() {
