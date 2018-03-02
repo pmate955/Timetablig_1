@@ -6,12 +6,18 @@ public class Course {
 	private int capacity;
 	private int slots;
 	private boolean isFixed;
+	private String topicname;
 	
-	public Course(String name,  int slots, int capacity){
+	public Course(String name, String topicname,  int slots, int capacity){
 		this.name = name;
 		this.capacity = capacity;
 		this.slots = slots;
 		this.isFixed = false;
+		this.topicname = topicname;
+	}
+
+	public String getTopicname() {
+		return topicname;
 	}
 
 	public int getSlots() {

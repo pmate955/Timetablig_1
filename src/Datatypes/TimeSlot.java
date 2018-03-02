@@ -12,9 +12,22 @@ public class TimeSlot {
 	public int getDay() {
 		return day;
 	}
-
+	
+	public void setDay(int day)
+	{
+		this.day = day;
+	}
+	
+	public void setSlot(int slot){
+		this.slot = slot;
+	}
+	
 	public int getSlot() {
 		return slot;
+	}
+	
+	public String toString(){
+		return "Day: " + this.day + " Slot: " + this.slot; 
 	}
 	
 	public boolean equals(Object o){

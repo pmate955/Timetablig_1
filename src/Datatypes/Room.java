@@ -26,9 +26,11 @@ public class Room {
 	}
 	
 	public void addCourse(Course c, TimeSlot t){
+		/*
 		for(int i = 0; i < c.getSlots(); i++){
 			this.used[t.getDay()][t.getSlot()+i] = c;			
-		}
+		}*/
+		this.used[t.getDay()][t.getSlot()] = c;		
 	}
 	
 	public Course getCourse(TimeSlot t){

@@ -1,5 +1,6 @@
 package Solver;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import Datatypes.Course;
@@ -8,6 +9,7 @@ import Datatypes.Room;
 import Datatypes.Teacher;
 import Datatypes.TimeSlot;
 import Datatypes.Topic;
+import Datatypes.Combo;
 
 public class GreedySolve {
 	private Reader r;
@@ -18,6 +20,7 @@ public class GreedySolve {
 	public List<Teacher> teachers;
 	public List<Course> courses;
 	public List<Topic> topics;
+	public List<TimeSlot> timeslots;
 	
 	public GreedySolve(String filename){
 		this.slots = 4;
@@ -29,107 +32,74 @@ public class GreedySolve {
 		this.rooms = r.rooms;
 		this.teachers = r.teachers;
 		this.courses = r.courses;
-		this.topics = r.topics;		
-	}
-	
-	public void solve(){										//Courses to Rooms
-		if(!readyToSolve){
-			System.out.println("Can not solve because no input data! ");
-			return;
-		}
-		int courseIndex = 0;
-		int counter = 0;
-		while(!isAllTopicFixed() || counter < 20){
-			this.clearTeacherAvailability();
-			for(int day = 0; day < days; day++ ){
-				for(int slot = 0; slot < slots; slot++){			//Fixed periods
-					for(Topic tp:topics){							//Go through topics
-						Course c = tp.getFirstUnfixed();
-						if(c==null) continue;						//If all course in topic is fixed, go to next topic
-						TimeSlot t = new TimeSlot(day, slot);
-						for(Room r : rooms) if(!r.isUsed(t) && slot <= slots-c.getSlots()){		//Go through rooms, and if we find an eligible period/room combination 
-							boolean noSameTopicInPeriod = true;
-							for(Room r2 :rooms){												//Check the same topics in period
-								if(r2.isUsed(t) && tp.contains(r2.getCourse(t))){
-									noSameTopicInPeriod = false;
-									break;
-								}
-							}
-							if(noSameTopicInPeriod){
-								r.addCourse(c, t);													//Add the course to room
-								c.setFixed();
-								courseIndex++;
-								break;
-							}
-						}
-						if(courseIndex>=courses.size()){					
-							this.addTeachers();
-							System.out.println("___________SOLVED_________");								
-							return;
-						}
-					}					
-				}
+		this.topics = r.topics;	
+		this.timeslots = new ArrayList();
+		for(int day = 0; day < 5; day++){
+			for(int slot = 0; slot < 4; slot++){
+				TimeSlot t = new TimeSlot(day,slot);
+				this.timeslots.add(t);
 			}
-			counter++;
-		}		
-		this.addTeachers();
-		System.out.println("Not solved in time :( ");
-	}
-	
-	private void addTeachers(){
-		int counter = 0, courseCounter = 0;
-		while(counter < 20){
-			for(int day = 0; day < days; day++){
-				for(int slot = 0; slot < slots; slot++){
-					TimeSlot t = new TimeSlot(day,slot);
-					for(Room r: rooms){
-						Course c = r.getCourse(t);
-						if(c == null || c.getT()!=null) continue;
-						String topicName = "";
-						for(Topic topic:topics){					//Optimize later !!!
-							if(topic.contains(c)){
-								topicName = topic.getName();
-								break;
-							}
-						}
-						boolean noTeacher = true;
-						for(Teacher te:teachers){
-							if(te.contains(topicName) && te.isAvailable(t)){
-								te.addUnavailablePeriod(t, c.getSlots());
-								c.setT(te);
-								courseCounter++;
-								noTeacher = false;
-								break;
-							}
-						}
-						if(noTeacher) System.out.println("Problem, no teacher : " + topicName);
-						if(courseCounter>=courses.size()){
-							System.out.println("Solved teachers");
-							return;
-						}
-					}
-				}
-			}			
-			courseCounter = 0;
-			counter++;
 		}
-		System.out.println("Not solved - Teachers");
 	}
 	
-	private void clearTeacherAvailability(){
-		for(Teacher t:teachers) t.clearAvailability();
-		for(Course c:courses) c.setT(null);
-	}
 	
-	private boolean isAllTopicFixed(){
-		for(Topic t:topics) if(!t.isAllFixed()) return false;
-		return true;
-	}
+	
 	
 	public void printSolution(){
 		System.out.println("Solution: ");
 		for(Room r: rooms) r.print();
 	}
+	
+	
+	
+	public boolean solveBackTrack2(List<Course> cs, List<Combo> solved, List<Combo> bad, int ti, int ri){
+		if(cs.isEmpty()) return true;			//Ha minden kurzust felhasználtunk, akkor vége
+		Course c = cs.get(0);					//Kiveszem az elsõ kurzust
+		if(ti >= timeslots.size()){
+			ti = 0;
+			ri++;
+		}
+		if(ri >= rooms.size()) return false;			//Ha nincs több választásunk, akkor visszalépünk
+		TimeSlot t = timeslots.get(ti);
+		Room r = rooms.get(ri);
+		boolean good = true;
+		for(int i = 0; i < c.getSlots(); i++){
+			Combo cbn = new Combo(c,new TimeSlot(t.getDay(),t.getSlot()+i),r);
+			if(erroneus(solved,cbn)){
+				good = false;
+				break;
+			}
+		}
+		if(good){
+			for(int i = 0; i < c.getSlots(); i++){
+				Combo cbn = new Combo(c,new TimeSlot(t.getDay(),t.getSlot()+i),r);
+				solved.add(cbn);
+			}
+			cs.remove(c);
+			return solveBackTrack2(cs,solved,bad,0,0);		//Ha sikerült lerakni a kombót, megyünk tovább lefelé
+		}
+		return solveBackTrack2(cs,solved,bad,++ti,ri);
+	}
+	
+	public void setCombo(List<Combo> l){
+		for(Combo cmb: l){
+			Room r = null;
+			for(Room ro : rooms){
+				if(ro.equals(cmb.getR())){
+					ro.addCourse(cmb.getCourse(), cmb.getT());
+				}
+			}
+		}
+	}
+	
+	private boolean erroneus(List<Combo> good, Combo c){		//TRue, ha nem jó a megoldás
+		if(c.getT().getSlot()>=4) return true;		//Ha "túllóg" az óra
+		for(Combo gd: good){
+			if(gd.getR().equals(c.getR()) && gd.getT().equals(c.getT()))	return true;		//Ha ütközik
+		}
+		return false;
+	}
+	
 	
 	
 	
