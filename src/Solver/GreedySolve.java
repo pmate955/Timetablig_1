@@ -52,33 +52,55 @@ public class GreedySolve {
 	
 	
 	
-	public boolean solveBackTrack2(List<Course> cs, List<Combo> solved, List<Combo> bad, int ti, int ri){
+	public boolean solveBackTrack2(List<Course> cs, List<Combo> solved, List<Combo> bad, List<Teacher> teachers, int timeSlotIndex, int roomIndex, int teacherIndex){
 		if(cs.isEmpty()) return true;			//Ha minden kurzust felhasználtunk, akkor vége
 		Course c = cs.get(0);					//Kiveszem az elsõ kurzust
-		if(ti >= timeslots.size()){
-			ti = 0;
-			ri++;
+		if(timeSlotIndex >= timeslots.size()){	//Ha nincs több idõpont, megyünk a következõ teremre
+			timeSlotIndex = 0;
+			roomIndex++;
 		}
-		if(ri >= rooms.size()) return false;			//Ha nincs több választásunk, akkor visszalépünk
-		TimeSlot t = timeslots.get(ti);
-		Room r = rooms.get(ri);
+		if(roomIndex >= rooms.size()) return false;			//Ha nincs több választásunk, akkor visszalépünk
+		TimeSlot t = timeslots.get(timeSlotIndex);
+		Room r = rooms.get(roomIndex);
 		boolean good = true;
-		for(int i = 0; i < c.getSlots(); i++){
+		for(int i = 0; i < c.getSlots(); i++){				//Megnézzük, hogy minden slotba illik-e az óra
 			Combo cbn = new Combo(c,new TimeSlot(t.getDay(),t.getSlot()+i),r);
 			if(erroneus(solved,cbn)){
 				good = false;
 				break;
 			}
 		}
-		if(good){
+		boolean foundTeacher = false;						//Megpróbálunk ráérõ tanárt keresni
+		for(int j = 0; j < teachers.size();j++){
+			boolean found = true;
+			Teacher tc = teachers.get(j);
+			if(!tc.contains(c.getTopicname())) continue;
+			for(int i = 0; i < c.getSlots(); i++){
+				TimeSlot tts = new TimeSlot(t.getDay(),t.getSlot()+i);
+				if(!tc.isAvailable(tts)){
+					found = false;
+					break;
+				}
+			}
+			if(found){
+				teacherIndex = j;
+				foundTeacher = true;
+				break;
+			}
+			
+		}
+		if(good && foundTeacher){
+
+			teachers.get(teacherIndex).addUnavailablePeriod(t, c.getSlots());		//Foglalttá tesszük az adott tanárt
 			for(int i = 0; i < c.getSlots(); i++){
 				Combo cbn = new Combo(c,new TimeSlot(t.getDay(),t.getSlot()+i),r);
+				cbn.getCourse().setT(teachers.get(teacherIndex));					//Elmentjük a megoldást
 				solved.add(cbn);
 			}
 			cs.remove(c);
-			return solveBackTrack2(cs,solved,bad,0,0);		//Ha sikerült lerakni a kombót, megyünk tovább lefelé
+				return solveBackTrack2(cs,solved,bad,teachers,0,0,0);		//Ha sikerült lerakni a kombót, megyünk tovább
 		}
-		return solveBackTrack2(cs,solved,bad,++ti,ri);
+		return solveBackTrack2(cs,solved,bad,teachers,++timeSlotIndex,roomIndex,teacherIndex);		//Ha nem, akkor tovább próbálkozunk
 	}
 	
 	public void setCombo(List<Combo> l){

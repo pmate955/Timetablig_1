@@ -14,7 +14,7 @@ public class Main {
 		GreedySolve g = new GreedySolve("time2.txt");
 		List<Combo> solved = new ArrayList();
 		List<Combo> bad = new ArrayList();
-		if(g.solveBackTrack2(g.courses,solved,bad,0,0))System.out.println("yuhú");;
+		if(g.solveBackTrack2(g.courses,solved,bad,g.teachers,0,0,0))System.out.println("yuhú");;
 		for(Combo c: solved){
 			c.print();
 		}
