@@ -1,5 +1,7 @@
 package Datatypes;
 
+import java.util.Arrays;
+
 public class Room {
 	private String name;
 	private Course[][] used;
@@ -43,6 +45,43 @@ public class Room {
 			} else break;
 		}
 		return now;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + capacity;
+		result = prime * result + days;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + slots;
+		result = prime * result + Arrays.deepHashCode(used);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Room other = (Room) obj;
+		if (capacity != other.capacity)
+			return false;
+		if (days != other.days)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (slots != other.slots)
+			return false;
+		if (!Arrays.deepEquals(used, other.used))
+			return false;
+		return true;
 	}
 
 	public void print(){
