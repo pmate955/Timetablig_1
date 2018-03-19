@@ -1,15 +1,16 @@
 package Solver;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
+import Datatypes.Combo;
 import Datatypes.Course;
 //import Datatypes.Curriculum;
 import Datatypes.Room;
 import Datatypes.Teacher;
 import Datatypes.TimeSlot;
 import Datatypes.Topic;
-import Datatypes.Combo;
 
 public class GreedySolve {
 	private Reader r;
@@ -21,6 +22,7 @@ public class GreedySolve {
 	public List<Course> courses;
 	public List<Topic> topics;
 	public List<TimeSlot> timeslots;
+	public static int runCount = 0;
 	
 	public GreedySolve(String filename){
 		this.slots = 4;
@@ -51,56 +53,69 @@ public class GreedySolve {
 	}
 	
 	
-	
-	public boolean solveBackTrack2(List<Course> cs, List<Combo> solved, List<Combo> bad, List<Teacher> teachers, int timeSlotIndex, int roomIndex, int teacherIndex){
-		if(cs.isEmpty()) return true;			//Ha minden kurzust felhasználtunk, akkor vége
-		Course c = cs.get(0);					//Kiveszem az elsõ kurzust
-		if(timeSlotIndex >= timeslots.size()){	//Ha nincs több idõpont, megyünk a következõ teremre
+					// List of unfixed courses, solution Course/Room/Time/Teacher combo, already used Time/Room, list of teachers
+	public boolean solveBackTrack2(List<Course> cs, List<Combo> solved, List<Point> used, List<Teacher> teachers, int timeSlotIndex, int roomIndex){
+		runCount++;
+		if(cs.isEmpty()) return true;							//If there's no more unfixed course, end of the recursion
+		Course c = cs.get(0);									//Else we get the first unfixed course, and trying to fix
+		if(timeSlotIndex >= timeslots.size()){					//If "timeIndex" > maximum time, we're going to next room
 			timeSlotIndex = 0;
 			roomIndex++;
 		}
-		if(roomIndex >= rooms.size()) return false;			//Ha nincs több választásunk, akkor visszalépünk
-		TimeSlot t = timeslots.get(timeSlotIndex);
-		Room r = rooms.get(roomIndex);
+		if(roomIndex >= rooms.size()) return false;				//If there is no more room/time, we're failed
+		Point p = new Point(timeSlotIndex, roomIndex);			//We're checking the given time/room combo
+		while(used.contains(p)){								//If it's already used, no need recursion, while we dont find an available slot
+			timeSlotIndex++;		
+			if(timeSlotIndex >= timeslots.size()){	
+				timeSlotIndex = 0;
+				roomIndex++;
+			}
+			if(roomIndex >= rooms.size()) return false;			
+			p = new Point(timeSlotIndex, roomIndex);
+		}
+		TimeSlot t = timeslots.get(timeSlotIndex);				//We get the time slot
+		Room r = rooms.get(roomIndex);							//and the room
 		boolean good = true;
-		for(int i = 0; i < c.getSlots(); i++){				//Megnézzük, hogy minden slotba illik-e az óra
+		for(int i = 0; i < c.getSlots(); i++){					//Check the course/Slot/room combo, has collision with already fixed combos?
 			Combo cbn = new Combo(c,new TimeSlot(t.getDay(),t.getSlot()+i),r);
 			if(erroneus(solved,cbn)){
 				good = false;
 				break;
 			}
 		}
-		boolean foundTeacher = false;						//Megpróbálunk ráérõ tanárt keresni
-		for(int j = 0; j < teachers.size();j++){
+		boolean foundTeacher = false;							//We're trying to find a teacher to combo
+		int teacherIndex = 0;
+		for(int j = 0; j < teachers.size();j++){				//We go through teachers
 			boolean found = true;
 			Teacher tc = teachers.get(j);
-			if(!tc.contains(c.getTopicname())) continue;
+			if(!tc.contains(c.getTopicname())) continue;		//If the teacher is not specialized for the course, we get the next one
 			for(int i = 0; i < c.getSlots(); i++){
 				TimeSlot tts = new TimeSlot(t.getDay(),t.getSlot()+i);
-				if(!tc.isAvailable(tts)){
+				if(!tc.isAvailable(tts)){						//We have to check the teacher availability 
 					found = false;
 					break;
 				}
 			}
-			if(found){
+			if(found){											//If teacher has time we found the one we need :)
 				teacherIndex = j;
 				foundTeacher = true;
 				break;
 			}
 			
 		}
-		if(good && foundTeacher){
+		if(good && foundTeacher){								//If the course has time/room/teacher, we can add to our solved list
 
-			teachers.get(teacherIndex).addUnavailablePeriod(t, c.getSlots());		//Foglalttá tesszük az adott tanárt
+			teachers.get(teacherIndex).addUnavailablePeriod(t, c.getSlots());		//set the teacher unavailable for him course
 			for(int i = 0; i < c.getSlots(); i++){
 				Combo cbn = new Combo(c,new TimeSlot(t.getDay(),t.getSlot()+i),r);
-				cbn.getCourse().setT(teachers.get(teacherIndex));					//Elmentjük a megoldást
+				cbn.getCourse().setT(teachers.get(teacherIndex));					//Save the combos
 				solved.add(cbn);
+				used.add(new Point(timeSlotIndex+i, roomIndex));
 			}
 			cs.remove(c);
-				return solveBackTrack2(cs,solved,bad,teachers,0,0,0);		//Ha sikerült lerakni a kombót, megyünk tovább
+				return solveBackTrack2(cs,solved,used,teachers,0,0);		//We going down the tree with the next course
 		}
-		return solveBackTrack2(cs,solved,bad,teachers,++timeSlotIndex,roomIndex,teacherIndex);		//Ha nem, akkor tovább próbálkozunk
+		return solveBackTrack2(cs,solved,used,teachers,++timeSlotIndex,roomIndex);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 	
 	public void setCombo(List<Combo> l){
@@ -114,12 +129,12 @@ public class GreedySolve {
 		}
 	}
 	
-	private boolean erroneus(List<Combo> good, Combo c){		//TRue, ha nem jó a megoldás
-		if(c.getT().getSlot()>=4) return true;		//Ha "túllóg" az óra
+	private boolean erroneus(List<Combo> good, Combo c){					//True, if the solution is not correct
+		if(c.getT().getSlot()>=4) return true;								//Not enough timeslot for the given day
 		for(Combo gd: good){
-			if(gd.getR().equals(c.getR()) && gd.getT().equals(c.getT()))	return true;		//Ha ütközik
+			if(gd.getR().equals(c.getR()) && gd.getT().equals(c.getT()))	return true;		//If it collides with another course, which is already in list
 		}
-		return false;
+		return false;														//Otherwise, it's good :)
 	}
 	
 	
