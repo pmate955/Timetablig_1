@@ -19,6 +19,10 @@ public class Teacher {
 	public String getName() {
 		return name;
 	}
+	
+	public int getUnavailabelCount(){
+		return availability.size();
+	}
 
 	public void setName(String _name) {
 		this.name = _name;

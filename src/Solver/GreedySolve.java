@@ -15,8 +15,6 @@ import Datatypes.Topic;
 public class GreedySolve {
 	private Reader r;
 	private boolean readyToSolve;
-	private int days;
-	private int slots;
 	public List<Room> rooms;
 	public List<Teacher> teachers;
 	public List<Course> courses;
@@ -25,8 +23,6 @@ public class GreedySolve {
 	public static int runCount = 0;
 	
 	public GreedySolve(String filename){
-		this.slots = 4;
-		this.days = 4;
 		this.r = new Reader(filename);
 		if(!r.readFile()){
 			this.readyToSolve = false;
@@ -64,7 +60,7 @@ public class GreedySolve {
 		}
 		if(roomIndex >= rooms.size()) return false;				//If there is no more room/time, we're failed
 		Point p = new Point(timeSlotIndex, roomIndex);			//We're checking the given time/room combo
-		while(used.contains(p)){								//If it's already used, no need recursion, while we dont find an available slot
+		while(used.contains(p)){								//If it's already used, no need recursion, while we don't find an available slot
 			timeSlotIndex++;		
 			if(timeSlotIndex >= timeslots.size()){	
 				timeSlotIndex = 0;
@@ -83,25 +79,30 @@ public class GreedySolve {
 				break;
 			}
 		}
-		boolean foundTeacher = false;							//We're trying to find a teacher to combo
+		boolean foundTeacher = false;
 		int teacherIndex = 0;
-		for(int j = 0; j < teachers.size();j++){				//We go through teachers
-			boolean found = true;
-			Teacher tc = teachers.get(j);
-			if(!tc.contains(c.getTopicname())) continue;		//If the teacher is not specialized for the course, we get the next one
-			for(int i = 0; i < c.getSlots(); i++){
-				TimeSlot tts = new TimeSlot(t.getDay(),t.getSlot()+i);
-				if(!tc.isAvailable(tts)){						//We have to check the teacher availability 
-					found = false;
-					break;
+		if(good){										//We're trying to find a teacher to combo with the minimal courses (soft constraint)
+			int minimalSlot = Integer.MAX_VALUE;
+			for(int j = 0; j < teachers.size();j++){				//We go through teachers
+				boolean found = true;
+				Teacher tc = teachers.get(j);
+				if(!tc.contains(c.getTopicname())) continue;		//If the teacher is not specialized for the course, we get the next one
+				for(int i = 0; i < c.getSlots(); i++){
+					TimeSlot tts = new TimeSlot(t.getDay(),t.getSlot()+i);
+					if(!tc.isAvailable(tts)){						//We have to check the teacher availability 
+						found = false;
+						break;
+					}
 				}
+				if(found){											//If teacher has time we found the one we need :)
+					if(tc.getUnavailabelCount()<minimalSlot){
+						teacherIndex = j;
+						minimalSlot = tc.getUnavailabelCount();
+					}					
+					foundTeacher = true;					
+				}
+				
 			}
-			if(found){											//If teacher has time we found the one we need :)
-				teacherIndex = j;
-				foundTeacher = true;
-				break;
-			}
-			
 		}
 		if(good && foundTeacher){								//If the course has time/room/teacher, we can add to our solved list
 
