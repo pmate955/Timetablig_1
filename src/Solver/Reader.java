@@ -33,6 +33,7 @@ public class Reader {
 				else if(token[0].equals("Teacher")) this.addTeacher(token);
 				else if(token[0].equals("Topic")) this.addTopic(token);
 				else if(token[0].equals("Course")) this.addCourse(token);
+				else if(token[0].equals("Speciality")) this.addSpeciality(token);
 				s = br.readLine();
 			}
 			br.close();
@@ -66,16 +67,21 @@ public class Reader {
 		String name = str[1];
 		int capacity = Integer.parseInt(str[3]);
 		int slots = Integer.parseInt(str[2]);
-		Course c = new Course(name, slots, capacity);
+		Course c = new Course(name,topics.get(topics.size()-1).getName(), slots, capacity);
 		courses.add(c);
 		topics.get(topics.size()-1).addCourse(c);
+	}
+	
+	private void addSpeciality(String[] str){
+		String spec = str[1];
+		teachers.get(teachers.size()-1).addSpeciality(spec);
 	}
 	
 	public void print(){
 		System.out.println("Rooms: ");
 		for(Room r:rooms) System.out.println(r.getName());
 		System.out.println("Teachers: ");
-		for(Teacher t:teachers) System.out.println(t.get_name());
+		for(Teacher t:teachers) t.print();
 		System.out.println("Topics: ");
 		for(Topic c: topics) {
 			System.out.println("---------------------------");
