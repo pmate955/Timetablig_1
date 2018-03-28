@@ -26,7 +26,7 @@ public class VisualRoom extends JPanel{
 					addCourse(current, i, j);
 					startSlot = j;
 				}
-				else if(r.getCourseByPos(i, j).getName().equals(current.getName())) continue;
+				else if(current != null && r.getCourseByPos(i, j).getName().equals(current.getName())) continue;
 				else
 				{
 					//create visualslot for current

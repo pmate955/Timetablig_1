@@ -1,6 +1,7 @@
 Room;216;25
 Room;217;25
 Room;218;25
+Room;219;25
 Teacher;T1
 Speciality;Adatb
 Speciality;Dimat1
@@ -12,6 +13,7 @@ Speciality;Progalap
 Speciality;Dimat1
 Teacher;T4
 Speciality;Elektro
+Speciality;OS
 Teacher;T5
 Speciality;OS
 Speciality;Adatb

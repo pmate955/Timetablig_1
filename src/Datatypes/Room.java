@@ -47,6 +47,10 @@ public class Room {
 		return now;
 	}
 
+	public void clearRoom(){
+		this.used = new Course[days][slots];
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

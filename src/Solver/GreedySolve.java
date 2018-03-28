@@ -6,6 +6,7 @@ import java.util.List;
 
 import Datatypes.Combo;
 import Datatypes.Course;
+import Datatypes.IndexCombo;
 //import Datatypes.Curriculum;
 import Datatypes.Room;
 import Datatypes.Teacher;
@@ -27,11 +28,15 @@ public class GreedySolve {
 		if(!r.readFile()){
 			this.readyToSolve = false;
 		} else this.readyToSolve = true;
-		this.rooms = r.rooms;
-		this.teachers = r.teachers;
-		this.courses = r.courses;
-		this.topics = r.topics;	
-		this.timeslots = new ArrayList();
+		this.rooms = new ArrayList<Room>();
+		this.courses = new ArrayList<Course>();
+		this.teachers = new ArrayList<Teacher>();
+		this.topics = new ArrayList<Topic>();
+		this.copyListR(this.rooms, r.rooms);
+		this.copyListT(this.teachers, r.teachers);
+		this.copyListC(this.courses, r.courses);
+		this.copyListTp(this.topics, r.topics);
+		this.timeslots = new ArrayList<TimeSlot>();
 		for(int day = 0; day < 5; day++){
 			for(int slot = 0; slot < 4; slot++){
 				TimeSlot t = new TimeSlot(day,slot);
@@ -40,7 +45,22 @@ public class GreedySolve {
 		}
 	}
 	
+	public void clearData(){
+		for(Room ro:rooms) ro.clearRoom();
+		for(Teacher t:teachers) t.clearAvailability();
+		this.copyListC(this.courses, r.courses);
+	}
 	
+	public void NoFridaySlot(){
+		this.timeslots.clear();
+		for(int day = 0; day < 4; day++){
+			for(int slot = 0; slot < 4; slot++){
+				TimeSlot t = new TimeSlot(day,slot);
+				this.timeslots.add(t);
+			}
+		}
+		System.out.println("Timeslots" + timeslots.size());
+	}
 	
 	
 	public void printSolution(){
@@ -51,7 +71,7 @@ public class GreedySolve {
 	
 					// List of unfixed courses, solution Course/Room/Time/Teacher combo, already used Time/Room, list of teachers
 	public boolean solveBackTrack2(List<Course> cs, List<Combo> solved, List<Point> used, List<Teacher> teachers, int timeSlotIndex, int roomIndex){
-		runCount++;
+		runCount++;		
 		if(cs.isEmpty()) return true;							//If there's no more unfixed course, end of the recursion
 		Course c = cs.get(0);									//Else we get the first unfixed course, and trying to fix
 		if(timeSlotIndex >= timeslots.size()){					//If "timeIndex" > maximum time, we're going to next room
@@ -70,6 +90,7 @@ public class GreedySolve {
 			p = new Point(timeSlotIndex, roomIndex);
 		}
 		TimeSlot t = timeslots.get(timeSlotIndex);				//We get the time slot
+		System.out.println("Try " + roomIndex + " time " + t.toString() + c.getName());
 		Room r = rooms.get(roomIndex);							//and the room
 		boolean good = true;
 		for(int i = 0; i < c.getSlots(); i++){					//Check the course/Slot/room combo, has collision with already fixed combos?
@@ -114,9 +135,82 @@ public class GreedySolve {
 				used.add(new Point(timeSlotIndex+i, roomIndex));
 			}
 			cs.remove(c);
+				System.out.println("Good");
 				return solveBackTrack2(cs,solved,used,teachers,0,0);		//We going down the tree with the next course
 		}
+		System.out.println("bad no place" + good + " no teacher " + foundTeacher);
 		return solveBackTrack2(cs,solved,used,teachers,++timeSlotIndex,roomIndex);		//If we didn't find something, we have to check the next time slots/rooms
+	}
+	
+	public boolean solveBackTrackHard(List<Course> cs, List<Combo> solved, List<IndexCombo> used, List<Teacher> teachers, int timeSlotIndex, int roomIndex, int teacherIndex){	
+		runCount++;
+		if(cs.isEmpty()) return true;							//If there's no more unfixed course, end of the recursion
+		Course c = cs.get(0);									//Else we get the first unfixed course, and trying to fix
+		if(timeSlotIndex >= timeslots.size()){					//If "timeIndex" > maximum time, we're going to next room
+			timeSlotIndex = 0;
+			roomIndex++;
+		}
+		if(roomIndex >= rooms.size()){
+			roomIndex = 0;									//If there is no more room/time, next teacher
+			teacherIndex++;
+		}
+		if(teacherIndex>=teachers.size()) return false;
+		IndexCombo p = new IndexCombo(timeSlotIndex, roomIndex, teacherIndex);			//We're checking the given time/room combo
+		while(used.contains(p)){								//If it's already used, no need recursion, while we don't find an available slot
+			timeSlotIndex++;		
+			if(timeSlotIndex >= timeslots.size()){					//If "timeIndex" > maximum time, we're going to next room
+				timeSlotIndex = 0;
+				roomIndex++;
+			}
+			if(roomIndex >= rooms.size()){
+				roomIndex = 0;									//If there is no more room/time, next teacher
+				teacherIndex++;
+			}
+			if(teacherIndex>=teachers.size()) return false;	
+			p = new IndexCombo(timeSlotIndex, roomIndex, teacherIndex);
+		}
+		TimeSlot t = timeslots.get(timeSlotIndex);				//We get the time slot
+		Room r = rooms.get(roomIndex);							//and the room
+		boolean good = true;
+		for(int i = 0; i < c.getSlots(); i++){					//Check the course/Slot/room combo, has collision with already fixed combos?
+			Combo cbn = new Combo(c,new TimeSlot(t.getDay(),t.getSlot()+i),r);
+			if(erroneus(solved,cbn)){
+				good = false;
+				break;
+			}
+		}
+		boolean foundTeacher = false;
+		
+		if(good){										//We're trying to find a teacher to combo 
+					
+			boolean found = true;
+			Teacher tc = teachers.get(teacherIndex);
+			if(!tc.contains(c.getTopicname())) foundTeacher = false;	//If the teacher is not specialized for the course, we get the next one
+			for(int i = 0; i < c.getSlots(); i++){
+				TimeSlot tts = new TimeSlot(t.getDay(),t.getSlot()+i);
+				if(!tc.isAvailable(tts)){						//We have to check the teacher availability 
+					found = false;
+					break;
+				}
+			}
+			if(found){													
+				foundTeacher = true;					
+			}				
+			
+		}
+		if(good && foundTeacher){								//If the course has time/room/teacher, we can add to our solved list
+
+			teachers.get(teacherIndex).addUnavailablePeriod(t, c.getSlots());		//set the teacher unavailable for him course
+			for(int i = 0; i < c.getSlots(); i++){
+				Combo cbn = new Combo(c,new TimeSlot(t.getDay(),t.getSlot()+i),r);
+				cbn.getCourse().setT(teachers.get(teacherIndex));					//Save the combos
+				solved.add(cbn);
+				used.add(new IndexCombo(timeSlotIndex+i, roomIndex,teacherIndex));
+			}
+			cs.remove(c);
+				return solveBackTrackHard(cs,solved,used,teachers,0,0,0);		//We going down the tree with the next course
+		}
+		return solveBackTrackHard(cs,solved,used,teachers,++timeSlotIndex,roomIndex,teacherIndex);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 	
 	public void setCombo(List<Combo> l){
@@ -138,7 +232,26 @@ public class GreedySolve {
 		return false;														//Otherwise, it's good :)
 	}
 	
+	private void copyListC(List<Course> dest, List<Course> src){
+		for(int i = 0; i < src.size();i++){
+			dest.add(src.get(i));
+		}
+	}
+	public void copyListR(List<Room> dest, List<Room> src){
+		for(int i = 0; i < src.size();i++){
+			dest.add(src.get(i));
+		}
+	}
 	
+	private void copyListT(List<Teacher> dest, List<Teacher> src){
+		for(int i = 0; i < src.size();i++){
+			dest.add(src.get(i));
+		}
+	}
 	
-	
+	private void copyListTp(List<Topic> dest, List<Topic> src){
+		for(int i = 0; i < src.size();i++){
+			dest.add(src.get(i));
+		}
+	}
 }
