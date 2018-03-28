@@ -2,7 +2,9 @@ package Solver;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import Datatypes.Combo;
 import Datatypes.Course;
@@ -21,6 +23,7 @@ public class GreedySolve {
 	public List<Course> courses;
 	public List<Topic> topics;
 	public List<TimeSlot> timeslots;
+	public Map<String,List<Integer>> courseTeacher;
 	public static int runCount = 0;
 	
 	public GreedySolve(String filename){
@@ -36,6 +39,14 @@ public class GreedySolve {
 		this.copyListT(this.teachers, r.teachers);
 		this.copyListC(this.courses, r.courses);
 		this.copyListTp(this.topics, r.topics);
+		this.courseTeacher = new HashMap<String,List<Integer>>();
+		for(Topic to:topics){
+			List<Integer> tIndexes = new ArrayList<Integer>();
+			for(Teacher t:teachers){
+				if(t.contains(to.getName())) tIndexes.add(teachers.indexOf(t));
+			}
+			courseTeacher.put(to.getName(), tIndexes);
+		}
 		this.timeslots = new ArrayList<TimeSlot>();
 		for(int day = 0; day < 5; day++){
 			for(int slot = 0; slot < 4; slot++){
@@ -146,6 +157,7 @@ public class GreedySolve {
 		runCount++;
 		if(cs.isEmpty()) return true;							//If there's no more unfixed course, end of the recursion
 		Course c = cs.get(0);									//Else we get the first unfixed course, and trying to fix
+		List<Integer> teacherIndexes = this.getTeacherByCourse(c.getTopicname());
 		if(timeSlotIndex >= timeslots.size()){					//If "timeIndex" > maximum time, we're going to next room
 			timeSlotIndex = 0;
 			roomIndex++;
@@ -154,7 +166,7 @@ public class GreedySolve {
 			roomIndex = 0;									//If there is no more room/time, next teacher
 			teacherIndex++;
 		}
-		if(teacherIndex>=teachers.size()) return false;
+		if(teacherIndex>=teacherIndexes.size()) return false;
 		IndexCombo p = new IndexCombo(timeSlotIndex, roomIndex, teacherIndex);			//We're checking the given time/room combo
 		while(used.contains(p)){								//If it's already used, no need recursion, while we don't find an available slot
 			timeSlotIndex++;		
@@ -166,7 +178,7 @@ public class GreedySolve {
 				roomIndex = 0;									//If there is no more room/time, next teacher
 				teacherIndex++;
 			}
-			if(teacherIndex>=teachers.size()) return false;	
+			if(teacherIndex>=teacherIndexes.size()) return false;	
 			p = new IndexCombo(timeSlotIndex, roomIndex, teacherIndex);
 		}
 		TimeSlot t = timeslots.get(timeSlotIndex);				//We get the time slot
@@ -184,7 +196,7 @@ public class GreedySolve {
 		if(good){										//We're trying to find a teacher to combo 
 					
 			boolean found = true;
-			Teacher tc = teachers.get(teacherIndex);
+			Teacher tc = teachers.get(teacherIndexes.get(teacherIndex));
 			if(!tc.contains(c.getTopicname())) foundTeacher = false;	//If the teacher is not specialized for the course, we get the next one
 			for(int i = 0; i < c.getSlots(); i++){
 				TimeSlot tts = new TimeSlot(t.getDay(),t.getSlot()+i);
@@ -222,6 +234,10 @@ public class GreedySolve {
 				}
 			}
 		}
+	}
+	
+	private List<Integer> getTeacherByCourse(String topicName){
+		return courseTeacher.get(topicName);
 	}
 	
 	private boolean erroneus(List<Combo> good, Combo c){					//True, if the solution is not correct
