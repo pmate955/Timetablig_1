@@ -28,10 +28,6 @@ public class Room {
 	}
 	
 	public void addCourse(Course c, TimeSlot t){
-		/*
-		for(int i = 0; i < c.getSlots(); i++){
-			this.used[t.getDay()][t.getSlot()+i] = c;			
-		}*/
 		this.used[t.getDay()][t.getSlot()] = c;		
 	}
 	
@@ -45,6 +41,18 @@ public class Room {
 			} else break;
 		}
 		return now;
+	}
+	
+	public void deleteCourse(Course c,TimeSlot t){
+		for(int i = 0; i < c.getSlots();i++){
+			used[t.getDay()][t.getSlot()+i] = null;
+		}
+	}
+	
+	public void addFullCourse(Course c, TimeSlot t){
+		for(int i = 0; i < c.getSlots(); i++){
+			this.used[t.getDay()][t.getSlot()+i] = c;			
+		}
 	}
 
 	public void clearRoom(){

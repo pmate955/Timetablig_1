@@ -70,7 +70,6 @@ public class GreedySolve {
 				this.timeslots.add(t);
 			}
 		}
-		System.out.println("Timeslots" + timeslots.size());
 	}
 	
 	
@@ -101,7 +100,6 @@ public class GreedySolve {
 			p = new Point(timeSlotIndex, roomIndex);
 		}
 		TimeSlot t = timeslots.get(timeSlotIndex);				//We get the time slot
-		System.out.println("Try " + roomIndex + " time " + t.toString() + c.getName());
 		Room r = rooms.get(roomIndex);							//and the room
 		boolean good = true;
 		for(int i = 0; i < c.getSlots(); i++){					//Check the course/Slot/room combo, has collision with already fixed combos?
@@ -146,10 +144,8 @@ public class GreedySolve {
 				used.add(new Point(timeSlotIndex+i, roomIndex));
 			}
 			cs.remove(c);
-				System.out.println("Good");
 				return solveBackTrack2(cs,solved,used,teachers,0,0);		//We going down the tree with the next course
 		}
-		System.out.println("bad no place" + good + " no teacher " + foundTeacher);
 		return solveBackTrack2(cs,solved,used,teachers,++timeSlotIndex,roomIndex);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 	
@@ -225,9 +221,45 @@ public class GreedySolve {
 		return solveBackTrackHard(cs,solved,used,teachers,++timeSlotIndex,roomIndex,teacherIndex);		//If we didn't find something, we have to check the next time slots/rooms
 	}
 	
+	public void HillClimbFriday(){
+		for(int slotIndex = 0; slotIndex < 4; slotIndex++){
+			HashMap<IndexCombo,Integer> map = this.getEmptyComboList();
+			for(Room room: rooms){
+				Course c = room.getCourseByPos(4, slotIndex);
+				if(c!=null){
+					
+				}
+			}
+		}
+		
+	}
+	
+	
+	
+	public HashMap<IndexCombo,Integer> getEmptyComboList(){				//Integer stores the size of slots, Indexcombo(day,slot,roomIndex)
+		HashMap<IndexCombo,Integer> output = new HashMap<IndexCombo,Integer>();
+		for(int roomIndex = 0; roomIndex<rooms.size();roomIndex++){
+			Room r = rooms.get(roomIndex);
+			for(int day = 0; day < 5; day++){
+				for(int slot = 0; slot < 4; slot++){
+					if(r.getCourseByPos(day, slot)==null){
+						int size = 0;
+						for(int i = 0; i<4;i++){
+							if(slot+i<4 && r.getCourseByPos(day, slot+i)==null){
+								size++;
+							} else break;
+						}
+						output.put(new IndexCombo(day,slot,roomIndex), size);
+						slot+=size;
+					}
+				}
+			}
+		}
+		return output;		
+	}
+	
 	public void setCombo(List<Combo> l){
 		for(Combo cmb: l){
-			Room r = null;
 			for(Room ro : rooms){
 				if(ro.equals(cmb.getR())){
 					ro.addCourse(cmb.getCourse(), cmb.getT());

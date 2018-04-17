@@ -24,8 +24,20 @@ public class Combo {		//Represents a combination of TimeSlot, Course and Room {l
 		return r;
 	}
 	
+	public void setC(Course c) {
+		this.c = c;
+	}
+
+	public void setT(TimeSlot t) {
+		this.t = t;
+	}
+
+	public void setR(Room r) {
+		this.r = r;
+	}
+
 	public void print(){
-		System.out.println(t.toString() + " | " + c.toString() + " " + r.getName());
+		System.out.println(t.toString() + " | " + (c==null?"_":c.toString()) + " " + r.getName());
 	}
 	
 	public void setFixed(){

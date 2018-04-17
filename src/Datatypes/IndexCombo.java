@@ -22,6 +22,12 @@ public class IndexCombo {
 	}
 
 	@Override
+	public String toString() {
+		return "IndexCombo [slotIndex=" + slotIndex + ", roomIndex=" + roomIndex + ", teacherIndex=" + teacherIndex
+				+ "]";
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

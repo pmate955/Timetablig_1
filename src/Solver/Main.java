@@ -5,7 +5,9 @@ import java.awt.Point;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import Datatypes.Combo;
 import Datatypes.IndexCombo;
@@ -70,6 +72,7 @@ public class Main {
 		List<Room> roomSave = new ArrayList<Room>();
 		List<Combo> solvedSave = new ArrayList<Combo>();
 		if(g.solveBackTrackHard(g.courses,solved,bad,g.teachers,0,0,0)){
+			/*
 			System.out.println("Success, trying to solve without Friday!");
 			g.copyListR(roomSave, g.rooms);
 			for(Combo c:solved) solvedSave.add(c);
@@ -88,9 +91,13 @@ public class Main {
 				for(Combo c:solvedSave) solved.add(c);
 			}
 		}
-		else System.out.println("Failed!!!!");
+		else System.out.println("Failed!!!!");*/
 		g.setCombo(solved);	
+		HashMap<IndexCombo,Integer> map = g.getEmptyComboList();
+		for(Map.Entry<IndexCombo,Integer> c: map.entrySet()) System.out.println(c.getKey() + " " + c.getValue().toString());
 		g.printSolution();	
+		
+		}
 	}
 	
 }
